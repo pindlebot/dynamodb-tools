@@ -1,6 +1,6 @@
 
 const toPath = require('lodash.topath')
-const Client = require('./client')
+const Client = require('./DynamoDbClient')
 
 class Record extends Map {
   toJSON () {

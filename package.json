@@ -1,7 +1,7 @@
 {
   "name": "dynamodb-tools",
-  "version": "0.0.31",
-  "main": "index.js",
+  "version": "0.0.32",
+  "main": "lib/index.js",
   "license": "MIT",
   "scripts": {
     "test": "cross-env NODE_ENV=test DEBUG='dynamodb-tools' nyc mocha",

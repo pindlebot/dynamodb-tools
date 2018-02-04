@@ -15,7 +15,7 @@ const record = {
   message: 'Q2Fubm90IGNsZWFyIHRpbWVyOiB0aW1lciBjcmVhdGVkIHdpdGggc2V0dHR5cGUoKSBidXQgY2xlYXJlZCB3aXRoIGNsZWFyKCk='
 }
 
-const Db = require('../')
+const Db = require('../lib')
 
 function log (promise) {
   promise.then(data => { console.log(data.params) })

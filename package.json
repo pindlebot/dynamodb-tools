@@ -1,15 +1,17 @@
 {
   "name": "dynamodb-tools",
-  "version": "0.0.33",
-  "main": "lib/index.js",
+  "version": "0.0.34",
+  "main": "index.js",
   "license": "MIT",
   "scripts": {
     "test": "cross-env NODE_ENV=test DEBUG='dynamodb-tools' nyc mocha",
     "report": "nyc npm test && nyc report --reporter=text-lcov | ./node_modules/coveralls/bin/coveralls.js",
-    "fix": "standard --fix"
+    "fix": "standard --fix",
+    "build": "babel src -d lib"
   },
   "devDependencies": {
     "aws-sdk": "^2.188.0",
+    "babel-preset-env": "^1.6.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "cross-env": "^5.1.3",
@@ -19,7 +21,8 @@
     "standard": "^10.0.3"
   },
   "dependencies": {
-    "lodash.topath": "^4.5.2"
+    "lodash.topath": "^4.5.2",
+    "serialize-map": "^0.0.2"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"

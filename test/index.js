@@ -7,24 +7,22 @@ const should = chai.should()
 
 chai.use(chaiAsPromised)
 
-const prefix = 'github-code-search-dev-'
-const table = 'messages'
+const prefix = 'graphql-lambda-prod-'
+const table = 'users'
 const record = {
-  id: '0100462',
-  repo: 'jquery/jquery',
-  message: 'Q2Fubm90IGNsZWFyIHRpbWVyOiB0aW1lciBjcmVhdGVkIHdpdGggc2V0dHR5cGUoKSBidXQgY2xlYXJlZCB3aXRoIGNsZWFyKCk='
+  id: 'sess|3dd9b0174b5474d9a92a62b6fa79c20d'
 }
 
-const Db = require('../lib')
+const Db = require('../src').Db
 
 function log (promise) {
-  promise.then(data => { console.log(data.params) })
+  promise.then(data => { console.log(data) })
 }
 
 describe('prepare(name, {})', function () {
   it('prepare(name, {})', function (done) {
     let db = new Db(undefined, { prefix })
-    let p = db.prepare('messages', {})
+    let p = db.prepare(table, {})
     p.should.eventually.be.fulfilled.notify(done)
     log(p)
   })
@@ -33,7 +31,7 @@ describe('prepare(name, {})', function () {
 describe('table(name).prepare(props)', function () {
   it('table(name).prepare(props)', function (done) {
     let db = new Db(undefined, { prefix })
-    let p = db.table('messages').prepare(record)
+    let p = db.table(table).prepare(record)
     p.should.eventually.be.fulfilled.notify(done)
     log(p)
   })
@@ -42,7 +40,7 @@ describe('table(name).prepare(props)', function () {
 describe('prepare(name.id)', function () {
   it('prepare(name.id)', function (done) {
     let db = new Db(undefined, { prefix })
-    let p = db.prepare(`messages.${record.id}`)
+    let p = db.prepare(`users.${record.id}`)
     p.should.eventually.be.fulfilled.notify(done)
     log(p)
   })
@@ -51,7 +49,7 @@ describe('prepare(name.id)', function () {
 describe('prepare(name.id, { id })', function () {
   it('prepare(name.id, { id })', function (done) {
     let db = new Db(undefined, { prefix })
-    let p = db.prepare(`messages.${record.id}`, { id: record.id })
+    let p = db.prepare(`users.${record.id}`, { id: record.id })
     p.should.eventually.be.fulfilled.notify(done)
     log(p)
   })
@@ -59,7 +57,7 @@ describe('prepare(name.id, { id })', function () {
 
 describe('table(name).get(id)', function () {
   it('table(name).get(id)', function (done) {
-    let db = new Db(undefined, {prefix, meta: true, dryRun: true})
+    let db = new Db(undefined, {prefix, meta: true, dryRun: false})
     let p = db.table(table).get(record.id)
     log(p)
     p.should.eventually.be.fulfilled.notify(done)
@@ -68,21 +66,29 @@ describe('table(name).get(id)', function () {
 
 describe('table(name).get({ id })', function () {
   it('table(name).get({ id })', function (done) {
-    let db = new Db(undefined, {prefix, dryRun: true})
+    let db = new Db(undefined, {prefix, dryRun: false})
     let p = db.table(table).get({ id: record.id })
     p.should.eventually.be.fulfilled.notify(done)
     log(p)
   })
 })
 
-/* describe('Db.get(name.id)', function () {
-  it('Db.get(name.id)', function (done) {
+describe('Db.plugin', function () {
+  it('Db.plugin', function (done) {
     let db = new Db(undefined, {prefix})
+
+    async function plugin (props, func) {
+      let out = await func()
+      console.log(out)
+      return out
+    }
+
+    db.use(plugin)
     let p = db.get(`${table}.${record.id}`)
-    p.should.eventually.have.property('id').notify(done)
+    p.should.eventually.be.fulfilled.notify(done)
   });
 });
-
+/*
 describe('Db.get(name, props)', function () {
   it('Db.get(name, props)', function (done) {
     let db = new Db(undefined, {prefix})

@@ -3,9 +3,9 @@ const toPath = require('lodash.topath')
 
 class Base {
   constructor () {
-    this.state = new EnhancedMap()
-    this.params = new EnhancedMap()
-    this.cache = new EnhancedMap()
+    this.state = EnhancedMap.create()
+    this.params = EnhancedMap.create()
+    this.cache = EnhancedMap.create()
   }
 
   table (name) {
@@ -41,7 +41,7 @@ class Base {
       table = await this.client.describeTable({
         TableName: tableName
       })
-      table = new EnhancedMap().fromJSON(table)
+      table = EnhancedMap.create().fromJSON(table)
       this.cache.set(tableName, table)
     } else {
       table = this.cache.get(tableName)
@@ -68,8 +68,8 @@ class Base {
       !Object.is(params, props)
       ? params : {}
 
-    this.params = new EnhancedMap().fromJSON(params)
-    this.props = new EnhancedMap().fromJSON(props)
+    this.params = EnhancedMap.create().fromJSON(params)
+    this.props = EnhancedMap.create().fromJSON(props)
 
     if (path) {
       // set table name and key
@@ -89,7 +89,7 @@ class Base {
     }
 
     if (Key.length === 2) {
-      this.params.set('Key', new EnhancedMap([Key]))
+      this.params.set('Key', EnhancedMap.create([Key]))
     }
 
     this.params.merge(

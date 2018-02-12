@@ -10,7 +10,7 @@ class Db extends Base {
     opts = {}
   ) {
     super()
-    this.plugins = new EnhancedMap()
+    this.plugins = EnhancedMap.create()
     this.client = DynamoDbClient(AwsConfig)
     this.opts = {}
     this.opts.meta = opts.meta || false

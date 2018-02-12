@@ -15,6 +15,7 @@ class Db extends Base {
     this.opts = {}
     this.opts.meta = opts.meta || false
     this.opts.prefix = opts.prefix || ''
+    this.opts.dryRun = opts.dryRun || false
   }
 
   setAttribute (type, props) {

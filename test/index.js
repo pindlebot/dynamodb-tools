@@ -88,6 +88,36 @@ describe('Db.plugin', function () {
     p.should.eventually.be.fulfilled.notify(done)
   });
 });
+
+describe('Db.set', function () {
+  it('Db.set', function (done) {
+    let db = new Db(undefined, { prefix: 'stackerror-dev-', dryRun: true })
+
+    const input = {
+      repos: {
+        page: 0,
+        index: 0
+      },
+      terms: {
+        index: 0
+      },
+      results: {
+        index: 0
+      },
+      post: {
+        id: 0
+      }
+    }
+    
+    let p = db.set('state.data', input)
+    p.then(data => {
+      console.log(data.params.toJSON())
+    })
+    log(p)
+    p.should.eventually.be.fulfilled.notify(done)
+  });
+});
+
 /*
 describe('Db.get(name, props)', function () {
   it('Db.get(name, props)', function (done) {

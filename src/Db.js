@@ -28,10 +28,6 @@ class Db extends Base {
     }
   }
 
-  static database (...args) {
-    return new Db(...args)
-  }
-
   setAttribute (type, props) {
     const char = type === 'ExpressionAttributeNames' ? '#' : ':'
     const pairs = {}
@@ -150,4 +146,13 @@ class Db extends Base {
   }
 }
 
-module.exports = (...args) => Db.database(...args)
+function database (...args) {
+  return new Db(...args)
+}
+
+database.database = database
+
+Db.prototype.database = database
+Db.database = database
+
+module.exports = database

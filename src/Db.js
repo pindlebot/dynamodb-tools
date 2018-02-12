@@ -4,7 +4,12 @@ const DynamoDbClient = require('./DynamoDbClient')
 const intersection = require('lodash.intersection')
 
 const defaultConfig = { region: 'us-east-1' }
-const defaultOpts = { meta: false, prefix: '', dryRun: false }
+const defaultOpts = {
+  meta: false,
+  prefix: '',
+  dryRun: false,
+  plugins: {}
+}
 
 const isOpts = (config = {}) => !!intersection(
   Object.keys(config),
@@ -12,7 +17,10 @@ const isOpts = (config = {}) => !!intersection(
 ).length
 
 class Db extends Base {
-  constructor (config = defaultConfig, opts = defaultOpts) {
+  constructor (
+    config = defaultConfig,
+    opts = defaultOpts
+  ) {
     super()
 
     if (isOpts(config)) {
@@ -21,12 +29,15 @@ class Db extends Base {
     }
 
     this.AwsConfig = config
-    this.plugins = EnhancedMap.create()
-    this.client = DynamoDbClient(this.AwsConfig)
-    this.opts = {
+
+    const mergedOptions = {
       ...defaultOpts,
       ...opts
     }
+
+    this.client = DynamoDbClient(this.AwsConfig)
+    this.opts = mergedOptions
+    this.opts.plugins = EnhancedMap.create().fromJSON(mergedOptions.plugins)
   }
 
   setAttribute (type, props) {
@@ -119,7 +130,7 @@ class Db extends Base {
 
   use (plugin, name) {
     if (typeof plugin === 'function') {
-      this.plugins.set(name || plugin.name, plugin)
+      this.opts.plugins.set(name || plugin.name, plugin)
     }
 
     return this
@@ -133,9 +144,9 @@ class Db extends Base {
     const operation = () =>
       this.client[operationType](params, { meta: this.opts.meta })
 
-    if (this.plugins.size) {
+    if (this.opts.plugins.size) {
       const results = []
-      for (let [k, plugin] of this.plugins) {
+      for (let [k, plugin] of this.opts.plugins) {
         let result = plugin(params, operation.bind(this))
         results.push(result)
       }
@@ -157,6 +168,7 @@ Db.prototype.database = function (...args) {
   if (!args.length) {
     args = [this.AwsConfig, this.opts]
   }
+
   return database.apply(Db, args)
 }
 

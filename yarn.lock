@@ -2858,9 +2858,9 @@ semver@5.3.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.3.0.tgz#9b2ce5d3de02d17c6012ad326aa6b4d0cf54f94f"
 
-serialize-map@^0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/serialize-map/-/serialize-map-0.0.6.tgz#a97179dece291a7e131f0b277335f8eb038b6c92"
+serialize-map@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/serialize-map/-/serialize-map-0.0.7.tgz#7b8b565bb055aa84f7991758c00ec6eca3eb1d6e"
   dependencies:
     lodash.topath "^4.5.2"
     object.entries "^1.0.4"

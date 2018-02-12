@@ -121,13 +121,18 @@ class Db extends Base {
 
     const operation = () =>
       this.client[operationType](params, { meta: this.opts.meta })
-    
+        .then(data => {
+          this.reset()
+          return data
+        })
+
     if (this.plugins.size) {
       const results = []
       for (let [k, plugin] of this.plugins) {
         let result = plugin(params, operation.bind(this))
         results.push(result)
       }
+
       return results.length > 1 ? results : results[0]
     }
 

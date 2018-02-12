@@ -19,7 +19,7 @@ function log (promise) {
   promise.then(data => { console.log(data) })
 }
 
-/*describe('prepare(name, {})', function () {
+describe('prepare(name, {})', function () {
   it('prepare(name, {})', function (done) {
     let db = new Db(undefined, { prefix })
     let p = db.prepare(table, {})
@@ -88,7 +88,7 @@ describe('Db.plugin', function () {
     p.should.eventually.be.fulfilled.notify(done)
   });
 });
-*/
+
 describe('Db.set', function () {
   it('Db.set', function (done) {
     let db = new Db(undefined, { prefix: 'stackerror-dev-', dryRun: true })
@@ -108,16 +108,16 @@ describe('Db.set', function () {
         id: 0
       }
     }
-    
+
     let p = db.set('state.data', input)
     p.then(data => {
       console.log(data.params)
       console.log(data.params.toJSON())
     })
-    //log(p)
+    // log(p)
     p.should.eventually.be.fulfilled.notify(done)
-  });
-});
+  })
+})
 
 /*
 describe('Db.get(name, props)', function () {

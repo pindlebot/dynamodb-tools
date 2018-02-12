@@ -100,6 +100,12 @@ class Base {
 
     return this
   }
+
+  reset () {
+    this.state.clear()
+    this.params.clear()
+    return this
+  }
 }
 
 module.exports = Base

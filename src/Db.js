@@ -1,5 +1,5 @@
 const Base = require('./Base')
-const { EnhancedMap } = require('serialize-map')
+const { EnhancedMap, toJSON } = require('serialize-map')
 const DynamoDbClient = require('./DynamoDbClient')
 
 class Db extends Base {
@@ -22,7 +22,7 @@ class Db extends Base {
     const char = type === 'ExpressionAttributeNames' ? '#' : ':'
     const pairs = {}
     for (let [k, v] of props) {
-      pairs[char + k] = char === ':' ? v : k
+      pairs[char + k] = char === ':' ? (v instanceof Map ? toJSON(v) : v) : k
     }
 
     this.params.set(type, pairs)

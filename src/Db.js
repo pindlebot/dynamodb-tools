@@ -1,21 +1,35 @@
 const Base = require('./Base')
 const { EnhancedMap, toJSON } = require('serialize-map')
 const DynamoDbClient = require('./DynamoDbClient')
+const intersection = require('lodash.intersection')
+
+const defaultConfig = { region: 'us-east-1' }
+const defaultOpts = { meta: false, prefix: '', dryRun: false }
+
+const isOpts = (config = {}) => !!intersection(
+  Object.keys(config),
+  ['meta', 'prefix', 'dryRun']
+).length
 
 class Db extends Base {
-  constructor (
-    AwsConfig = {
-      region: 'us-east-1'
-    },
-    opts = {}
-  ) {
+  constructor (config = defaultConfig, opts = defaultOpts) {
     super()
+
+    if (isOpts(config)) {
+      opts = config
+      config = defaultConfig
+    }
+
     this.plugins = EnhancedMap.create()
-    this.client = DynamoDbClient(AwsConfig)
-    this.opts = {}
-    this.opts.meta = opts.meta || false
-    this.opts.prefix = opts.prefix || ''
-    this.opts.dryRun = opts.dryRun || false
+    this.client = DynamoDbClient(config)
+    this.opts = {
+      ...defaultOpts,
+      ...opts
+    }
+  }
+
+  static database (...args) {
+    return new Db(...args)
   }
 
   setAttribute (type, props) {
@@ -121,10 +135,6 @@ class Db extends Base {
 
     const operation = () =>
       this.client[operationType](params, { meta: this.opts.meta })
-        .then(data => {
-          this.reset()
-          return data
-        })
 
     if (this.plugins.size) {
       const results = []
@@ -140,4 +150,4 @@ class Db extends Base {
   }
 }
 
-module.exports = Db
+module.exports = (...args) => Db.database(...args)

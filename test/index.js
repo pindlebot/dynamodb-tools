@@ -21,7 +21,7 @@ function log (promise) {
 
 describe('prepare(name, {})', function () {
   it('prepare(name, {})', function (done) {
-    let db = new Db(undefined, { prefix })
+    let db = Db(undefined, { prefix })
     let p = db.prepare(table, {})
     p.should.eventually.be.fulfilled.notify(done)
     log(p)
@@ -30,7 +30,7 @@ describe('prepare(name, {})', function () {
 
 describe('table(name).prepare(props)', function () {
   it('table(name).prepare(props)', function (done) {
-    let db = new Db(undefined, { prefix })
+    let db = Db(undefined, { prefix })
     let p = db.table(table).prepare(record)
     p.should.eventually.be.fulfilled.notify(done)
     log(p)
@@ -39,7 +39,7 @@ describe('table(name).prepare(props)', function () {
 
 describe('prepare(name.id)', function () {
   it('prepare(name.id)', function (done) {
-    let db = new Db(undefined, { prefix })
+    let db = Db(undefined, { prefix })
     let p = db.prepare(`users.${record.id}`)
     p.should.eventually.be.fulfilled.notify(done)
     log(p)
@@ -48,7 +48,7 @@ describe('prepare(name.id)', function () {
 
 describe('prepare(name.id, { id })', function () {
   it('prepare(name.id, { id })', function (done) {
-    let db = new Db(undefined, { prefix })
+    let db = Db(undefined, { prefix })
     let p = db.prepare(`users.${record.id}`, { id: record.id })
     p.should.eventually.be.fulfilled.notify(done)
     log(p)
@@ -57,7 +57,7 @@ describe('prepare(name.id, { id })', function () {
 
 describe('table(name).get(id)', function () {
   it('table(name).get(id)', function (done) {
-    let db = new Db(undefined, {prefix, meta: true, dryRun: false})
+    let db = Db(undefined, {prefix, meta: true, dryRun: false})
     let p = db.table(table).get(record.id)
     log(p)
     p.should.eventually.be.fulfilled.notify(done)
@@ -66,7 +66,7 @@ describe('table(name).get(id)', function () {
 
 describe('table(name).get({ id })', function () {
   it('table(name).get({ id })', function (done) {
-    let db = new Db(undefined, {prefix, dryRun: false})
+    let db = Db(undefined, {prefix, dryRun: false})
     let p = db.table(table).get({ id: record.id })
     p.should.eventually.be.fulfilled.notify(done)
     log(p)
@@ -75,7 +75,7 @@ describe('table(name).get({ id })', function () {
 
 describe('Db.plugin', function () {
   it('Db.plugin', function (done) {
-    let db = new Db(undefined, {prefix})
+    let db = Db(undefined, {prefix})
 
     async function plugin (props, func) {
       let out = await func()
@@ -86,12 +86,12 @@ describe('Db.plugin', function () {
     db.use(plugin)
     let p = db.get(`${table}.${record.id}`)
     p.should.eventually.be.fulfilled.notify(done)
-  });
-});
+  })
+})
 
 describe('Db.set', function () {
   it('Db.set', function (done) {
-    let db = new Db(undefined, { prefix: 'stackerror-dev-', dryRun: true })
+    let db = Db(undefined, { prefix: 'stackerror-dev-', dryRun: true })
 
     const input = {
       repos: {

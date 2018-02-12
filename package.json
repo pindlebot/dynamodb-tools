@@ -1,6 +1,6 @@
 {
   "name": "dynamodb-tools",
-  "version": "0.0.39",
+  "version": "0.0.40",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "lodash.topath": "^4.5.2",
-    "serialize-map": "^0.0.3"
+    "serialize-map": "^0.0.4"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"

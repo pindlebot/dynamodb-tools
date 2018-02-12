@@ -2849,11 +2849,10 @@ semver@5.3.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.3.0.tgz#9b2ce5d3de02d17c6012ad326aa6b4d0cf54f94f"
 
-serialize-map@^0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/serialize-map/-/serialize-map-0.0.3.tgz#f4798f7c05970dbd314f7911d62e087676271535"
+serialize-map@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/serialize-map/-/serialize-map-0.0.4.tgz#3edbf9f62ddfd57a8e85c5f5936caa4f11cde373"
   dependencies:
-    "@babel/cli" "^7.0.0-beta.39"
     lodash.topath "^4.5.2"
 
 set-blocking@^2.0.0, set-blocking@~2.0.0:

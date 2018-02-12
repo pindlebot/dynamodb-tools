@@ -20,8 +20,9 @@ class Db extends Base {
       config = defaultConfig
     }
 
+    this.AwsConfig = config
     this.plugins = EnhancedMap.create()
-    this.client = DynamoDbClient(config)
+    this.client = DynamoDbClient(this.AwsConfig)
     this.opts = {
       ...defaultOpts,
       ...opts
@@ -152,7 +153,13 @@ function database (...args) {
 
 database.database = database
 
-Db.prototype.database = database
+Db.prototype.database = function (...args) {
+  if (!args.length) {
+    args = [this.AwsConfig, this.opts]
+  }
+  return database.apply(Db, args)
+}
+
 Db.database = database
 
 module.exports = database

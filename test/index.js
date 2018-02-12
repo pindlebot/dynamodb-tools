@@ -13,7 +13,7 @@ const record = {
   id: 'sess|3dd9b0174b5474d9a92a62b6fa79c20d'
 }
 
-const Db = require('../src').Db
+const Db = require('../lib').Db
 
 function log (promise) {
   promise.then(data => { console.log(data) })

@@ -1,6 +1,6 @@
 {
   "name": "dynamodb-tools",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
@@ -10,8 +10,13 @@
     "build": "babel src -d lib"
   },
   "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.39",
+    "@babel/core": "^7.0.0-beta.39",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.39",
+    "@babel/plugin-transform-async-to-generator": "^7.0.0-beta.39",
+    "@babel/plugin-transform-exponentiation-operator": "^7.0.0-beta.39",
+    "@babel/preset-env": "^7.0.0-beta.39",
     "aws-sdk": "^2.188.0",
-    "babel-preset-env": "^1.6.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "cross-env": "^5.1.3",

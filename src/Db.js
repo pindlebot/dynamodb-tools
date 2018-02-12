@@ -120,9 +120,6 @@ class Db extends Base {
 
     const operation = () =>
       this.client[operationType](params, { meta: this.opts.meta })
-
-    this.params.clear()
-    this.state.clear()
     
     if (this.plugins.size) {
       const results = []

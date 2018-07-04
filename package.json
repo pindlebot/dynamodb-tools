@@ -4,8 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "cross-env NODE_ENV=test DEBUG='dynamodb-tools' nyc mocha",
-    "report": "nyc npm test && nyc report --reporter=text-lcov | ./node_modules/coveralls/bin/coveralls.js",
+    "test": "mocha",
+    "clean": "rimraf lib",
+    "report": "yarn test && report --reporter=text-lcov | ./node_modules/coveralls/bin/coveralls.js",
     "fix": "standard --fix",
     "build": "babel src -d lib"
   },
@@ -19,16 +20,13 @@
     "aws-sdk": "^2.188.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
-    "cross-env": "^5.1.3",
     "mocha": "^5.0.0",
     "mocha-lcov-reporter": "^1.3.0",
-    "nyc": "^11.4.1",
+    "rimraf": "^2.6.2",
     "standard": "^10.0.3"
   },
   "dependencies": {
-    "lodash.intersection": "^4.4.0",
-    "lodash.topath": "^4.5.2",
-    "serialize-map": "^0.0.8"
+    "lodash.topath": "^4.5.2"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"

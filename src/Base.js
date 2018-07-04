@@ -1,15 +1,26 @@
-const { EnhancedMap } = require('serialize-map')
 const toPath = require('lodash.topath')
 
 class Base {
   constructor () {
-    this.state = EnhancedMap.create()
-    this.params = EnhancedMap.create()
-    this.cache = EnhancedMap.create()
+    // {
+    //   table,
+    //   value,
+    //   name
+    // }
+    this.state = {}
+    this.params = {}
+    this.cache = {}
   }
 
   table (name) {
-    this.state.set('table', this.opts.prefix + name)
+    this.state.table = this.opts.prefix + name
+    return this
+  }
+
+  key (Key) {
+    if (Object.keys(Key).length) {
+      this.params.Key = Key
+    }
     return this
   }
 
@@ -20,39 +31,38 @@ class Base {
     // set params.TableName if {table}/{id} is provided
     if (path.length > 1) {
       this.table(path[0])
-      this.state.set('value', path[1])
+      this.state.value = path[1]
       return this
     }
 
-    if (!this.state.has('table')) {
+    if (!this.state.hasOwnProperty('table')) {
       this.table(path[0])
       return this
     }
 
-    this.state.set('value', path[0])
+    this.state.value = path[0]
     return this
   }
 
   async setPartitionKeyAttributeName () {
-    let tableName = this.state.get('table')
+    let tableName = this.state.table
     let table
 
-    if (!this.cache.has(tableName)) {
+    if (!this.cache.hasOwnProperty(tableName)) {
       table = await this.client.describeTable({
         TableName: tableName
       })
-      table = EnhancedMap.create().fromJSON(table)
-      this.cache.set(tableName, table)
+      this.cache[tableName] = table
     } else {
-      table = this.cache.get(tableName)
+      table = this.cache[tableName]
     }
 
-    let AttributeName = table.get('KeySchema')
+    let AttributeName = table.KeySchema
       .find(schema =>
         schema.KeyType === 'HASH'
       ).AttributeName
 
-    this.state.set('name', AttributeName)
+    this.state.name = AttributeName
 
     return this
   }
@@ -68,8 +78,8 @@ class Base {
       !Object.is(params, props)
       ? params : {}
 
-    this.params = EnhancedMap.create().fromJSON(params)
-    this.props = EnhancedMap.create().fromJSON(props)
+    this.params = params
+    this.props = props
 
     if (path) {
       // set table name and key
@@ -78,32 +88,31 @@ class Base {
 
     await this.setPartitionKeyAttributeName()
 
-    const name = this.state.get('name')
-    const Key = [name]
+    const name = this.state.name
+    const Key = {}
 
-    if (this.props.has(name)) {
-      Key.push(this.props.get(name))
-      this.props.delete(name)
-    } else if (this.state.has('value')) {
-      Key.push(this.state.get('value'))
+    if (this.props.hasOwnProperty(name)) {
+      Key[name] = this.props[name]
+      delete this.props[name]
+    } else if (this.state.hasOwnProperty('value')) {
+      Key[name] = this.state.value
     }
 
-    if (Key.length === 2) {
-      this.params.set('Key', EnhancedMap.create([Key]))
+    this.key(Key)
+
+    this.params = {
+      ...this.params,
+      ...(this.state.table
+        ? { TableName: this.state.table }
+        : {})
     }
-
-    this.params.merge(
-      this.state.has('table')
-        ? { TableName: this.state.get('table') }
-        : {}
-    )
-
+    console.log(this)
     return this
   }
 
   reset () {
-    this.state.clear()
-    this.params.clear()
+    this.state = {}
+    this.params = {}
     return this
   }
 }

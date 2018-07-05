@@ -1,0 +1,17 @@
+language: node_js
+node_js:
+- 9
+branches:
+  only:
+  - master
+install:
+- yarn
+before_script:
+- yarn build
+script:
+- yarn report
+- yarn npm-patch
+- rm .npmrc
+before_install:
+- openssl aes-256-cbc -K $encrypted_6fcbf04c2a0e_key -iv $encrypted_6fcbf04c2a0e_iv
+  -in .coveralls.yml.enc -out .coveralls.yml -d

@@ -1,42 +1,31 @@
-const Base = require('./Base')
+const Params = require('./Params')
 const DynamoDbClient = require('./DynamoDbClient')
 
-class DynamoDbTools extends Base {
+class DynamoDbTools extends Params {
   constructor (
-    awsConfig = { region: 'us-east-1' },
-    options = {
-      meta: false,
-      prefix: '',
-      dryRun: false,
-      plugins: {}
-    }
+    awsConfig = { region: 'us-east-1' }
   ) {
     super()
 
     this.AwsConfig = awsConfig
-    this.opts = options
-    this.opts.prefix = options.prefix || ''
     this.client = DynamoDbClient(this.AwsConfig)
-    this.opts.plugins = options.plugins || {}
   }
 
-  setAttribute (type, props) {
-    const char = type === 'ExpressionAttributeNames' ? '#' : ':'
-    const pairs = {}
-    for (let key in props) {
-      pairs[char + key] = char === ':' ? props[key] : key
-    }
-
-    this.params[type] = pairs
+  setAttribute (type, data) {
+    const char = type.endsWith('Names') ? '#' : ':'
+    this.params[type] = Object.keys(data).reduce((acc, key) => {
+      acc[char + key] = char === ':' ? data[key] : key
+      return acc
+    }, {})
   }
 
   setExpression (
     key,
-    props,
+    data,
     opts = {
       separator: ' AND '
     }) {
-    const expression = Object.keys(props)
+    const expression = Object.keys(data)
       .map(k => `#${k} = :${k}`)
       .join(opts.separator)
 
@@ -44,98 +33,74 @@ class DynamoDbTools extends Base {
       ? [opts.clause, expression].join(' ') : expression
   }
 
-  getGlobalSecondaryIndex (props) {
-    if (!(props && Object.keys(props).length)) return undefined
-    const tableName = this.params.TableName
-    const table = this.cache[tableName]
-    if (!table.GlobalSecondaryIndexes) return undefined
+  getGlobalSecondaryIndex (data = {}) {
+    const keys = Object.keys(data)
+    if (!keys.length) return undefined
+    const { GlobalSecondaryIndexes } = this.cache[this.params.TableName]
+    if (!GlobalSecondaryIndexes) return undefined
 
-    const globalSecondaryIndex = table.GlobalSecondaryIndexes.find(index =>
-      index.KeySchema.find(schema =>
-        Object.keys(props).includes(schema.AttributeName)
+    return GlobalSecondaryIndexes.find(({ KeySchema }) =>
+      KeySchema.find(({ AttributeName }) =>
+        keys.includes(AttributeName)
       )
     )
-
-    return globalSecondaryIndex
   }
 
   async set (...args) {
-    const { props } = await this.prepare(...args)
+    const { data } = await this.format(...args)
 
-    if (props && Object.keys(props).length) {
-      this.setAttribute('ExpressionAttributeNames', props)
-      this.setAttribute('ExpressionAttributeValues', props)
+    if (Object.keys(data).length) {
+      this.setAttribute('ExpressionAttributeNames', data)
+      this.setAttribute('ExpressionAttributeValues', data)
       this.params.ReturnValues = 'ALL_NEW'
       this.setExpression(
         'UpdateExpression',
-        props,
+        data,
         { separator: ', ', clause: 'SET' }
       )
     }
 
-    this.state.operation = 'updateItem'
-    console.log(this)
-    return this.value()
+    return this.value('updateItem')
   }
 
   async get (...args) {
-    const { props } = await this.prepare(...args)
-    const globalSecondaryIndex = this.getGlobalSecondaryIndex(props)
+    const { data } = await this.format(...args)
+    const globalSecondaryIndex = this.getGlobalSecondaryIndex(data)
 
-    if (typeof globalSecondaryIndex !== 'undefined') {
-      this.state.operation = 'query'
-    } else if (this.params.Key) {
-      this.state.operation = 'get'
-    } else {
-      this.state.operation = 'scan'
-    }
+    let operation = typeof globalSecondaryIndex !== 'undefined'
+      ? 'query'
+      : this.params.Key
+        ? 'get'
+        : 'scan'
 
     if (
-      this.state.operation === 'scan' &&
-      props && Object.keys(props).length
+      operation === 'scan' &&
+      Object.keys(data).length
     ) {
-      this.setAttribute('ExpressionAttributeNames', props)
-      this.setAttribute('ExpressionAttributeValues', props)
-      this.setExpression('FilterExpression', props)
+      this.setAttribute('ExpressionAttributeNames', data)
+      this.setAttribute('ExpressionAttributeValues', data)
+      this.setExpression('FilterExpression', data)
     }
 
-    return this.value()
+    return this.value(operation)
   }
 
-  async remove (...args) {
-    const props = await this.prepare(...args)
-
-    this.state.operation = 'deleteItem'
-    return this.value()
+  remove (...args) {
+    return this.format(...args).then(() =>
+      this.value('deleteItem')
+    )
   }
 
-  use (plugin, name) {
-    if (typeof plugin === 'function') {
-      this.opts.plugins[name || plugin.name] = plugin
-    }
-
-    return this
-  }
-
-  async value () {
-    if (this.opts.dryRun) return this
-    const params = this.params
-    const operationType = this.state.operation
-
-    const operation = () =>
-      this.client[operationType](params, { meta: this.opts.meta })
-    const keys = Object.keys(this.opts.plugins || {})
-    let results = []
-    while (keys.length) {
-      let pluginName = keys.shift()
-      let plugin = this.opts.plugins[pluginName]
-      let result = await plugin(params, operation.bind(this))
-      results.push(result)
-    }
-
-    return results.length
-      ? results
-      : operation()
+  value (operation) {
+    let TableName = this.params.TableName.slice(0)
+    return this.client[operation](this.params)
+      .then(data => {
+        Object.assign(this, database.apply(DynamoDbTools, this.AwsConfig))
+        this.params.TableName = TableName
+        return data.length && data.length === 1
+          ? data[0]
+          : data
+      })
   }
 }
 
@@ -146,10 +111,6 @@ function database (...args) {
 database.database = database
 
 DynamoDbTools.prototype.database = function (...args) {
-  if (!args.length) {
-    args = [this.AwsConfig, this.opts]
-  }
-
   return database.apply(DynamoDbTools, args)
 }
 

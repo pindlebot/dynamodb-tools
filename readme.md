@@ -6,35 +6,35 @@ npm i dynamodb-tools --save
 
 ```js
 
-const dynamo = require('dynamodb-tools')
-const config = { region: 'us-east-1' }
-const opts = {}
-const db = new dynamo.Db(config, opts)
+const dynamo = require('dynamodb-tools').db()
 
-````
+```
 
 ## Methods
 
-### `get(path, [obj])`
+### `get()`
 
-`get` fetches record(s) from a DynamoDb table.
+Returns all records in a table (scan operation).
 
-**Arguments**
+### `get(id: string)`
 
-- path: `{tableName}` or `{tableName}.{recordId}`
-- obj (optional): properties to match records against. 
-  - If your table has global secondary indices, this method will use [query](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/dynamodb-example-query-scan.html). Otherwise, this method will scan. 
+Returns a record in a table (get operation).
 
-Note: A record ID can be specified in either the path (`{tableName}.{ID}`) or object (`{ id }`) parameters.
+### `get({ id: 'value' }: object)`
+
+Returns records that match the data provided.
+ - `get({ id: 'recordId' })` performs a get operation and returns a single record. Equivalent to `get('recordId')`.
+ - `get({ age: 15 })` performs a scan operation or query operation (if global secondary indices are configured)
 
 #### Examples
 
 ```js
 
-const dynamo = require('dynamodb-tools')
-const db = new dynamo.Db({region: 'us-east-1'})
+const db = require('dynamodb-tools')
+  .db({ region: 'us-east-1' })
+  .table('orders')
 
-db.get('orders').then(resp => {
+db.get().then(resp => {
   console.log(resp)
 })
 
@@ -48,7 +48,7 @@ db.get('orders').then(resp => {
 //  ...
 // }]
 
-db.get('orders.1c8deb5013d6e49a').then(resp => {
+db.get('1c8deb5013d6e49a').then(resp => {
   console.log(resp)
 })
 
@@ -57,8 +57,7 @@ db.get('orders.1c8deb5013d6e49a').then(resp => {
 //  id: '1c8deb5013d6e49a',
 // }
 
-
-db.get('orders', { id: '1c8deb5013d6e49a' }).then(resp => {
+db.get({ id: '1c8deb5013d6e49a' }).then(resp => {
   console.log(resp)
 })
 
@@ -67,8 +66,8 @@ db.get('orders', { id: '1c8deb5013d6e49a' }).then(resp => {
 //  id: '1c8deb5013d6e49a',
 // }
 
-
-db.get('orders', { user: 'e67f846dc4b067d9fa6c9a8eda72f7de' }).then(resp => {
+// match all records in the provided table with user = 'e67f846dc4b067d9fa6c9a8eda72f7de'
+db.get({ user: 'e67f846dc4b067d9fa6c9a8eda72f7de' }).then(resp => {
   console.log(resp)
 })
 
@@ -79,26 +78,36 @@ db.get('orders', { user: 'e67f846dc4b067d9fa6c9a8eda72f7de' }).then(resp => {
 
 ```
 
-### `set(path, obj)`
+### `set(id: string)`
 
-`Set` creates a record or updates an existing record. 
+Create a new record with the provided id.
 
-- path: `{tableName}` or `{tableName}.{recordId}`
-- obj: object to create or update
+### `set({ id: '4d5ea3eddd26b469' })
+
+Equivalent to the above.
+
+### `set('4d5ea3eddd26b469', data)
+
+Create or update a record with an id and provided properties.
+
+### `set({ id: '4d5ea3eddd26b469', ...data })
+
+Equivalent to the above.
 
 #### Examples
 
 ```js
-const dynamo = require('dynamodb-tools')
-const db = new dynamo.Db({region: 'us-east-1'})
+const db = require('dynamodb-tools')
+  .db({ region: 'us-east-1' })
+  .table('orders')
 
-db.set('orders.4d5ea3eddd26b469').then(resp => {
+db.set({ id: '4d5ea3eddd26b469' }).then(resp => {
   console.log(resp)
 })
 
 // => { id: '4d5ea3eddd26b469' }
 
-db.set('orders.4d5ea3eddd26b469', { user: '408926c6a868bca6529fee1acf7f81cb' }) 
+db.set('4d5ea3eddd26b469', { user: '408926c6a868bca6529fee1acf7f81cb' }) 
  .then(resp => {
     console.log(resp)
   })
@@ -106,33 +115,22 @@ db.set('orders.4d5ea3eddd26b469', { user: '408926c6a868bca6529fee1acf7f81cb' })
 // => { id: '4d5ea3eddd26b469', user: '408926c6a868bca6529fee1acf7f81cb' }
 ```
 
-### `remove(path, [obj])`
+### `remove(id)`
 
 `remove` deletes record(s) from a DynamoDb table.
-
-**Arguments**
-
-- path: `{tableName}.{recordId}`
-- obj (optional): properties to match records against. 
 
 #### Examples
 
 ```js
 
-const dynamo = require('dynamodb-tools')
-const db = new dynamo.Db({region: 'us-east-1'})
+const db = require('dynamodb-tools')
+  .db({ region: 'us-east-1' })
+  .table('orders')
 
-const table = 'orders'
-const id = '4d5ea3eddd26b469'
-
-db.remove(`${table}.${id}`)
+db.remove('4d5ea3eddd26b469')
   .then(resp => console.log(resp))
 
-db.remove(table, { id })
-  .then(resp => console.log(resp))
-
-// WARNING: deletes all records in a table
-db.remove(table)
+db.remove({ id: '4d5ea3eddd26b469' })
   .then(resp => console.log(resp))
 
 ```
@@ -140,9 +138,9 @@ db.remove(table)
 
 [npm-image]: https://badge.fury.io/js/dynamodb-tools.svg
 [npm-url]: https://npmjs.org/package/dynamodb-tools
-[travis-image]: https://travis-ci.org/focuswish/dynamodb-tools.svg?branch=master
-[travis-url]: https://travis-ci.org/focuswish/dynamodb-tools
-[daviddm-image]: https://david-dm.org/focuswish/dynamodb-tools.svg?theme=shields.io
-[daviddm-url]: https://david-dm.org/focuswish/dynamodb-tools
-[coveralls-image]: https://coveralls.io/repos/focuswish/dynamodb-tools/badge.svg
-[coveralls-url]: https://coveralls.io/r/focuswish/dynamodb-tools
+[travis-image]: https://travis-ci.org/unshift/dynamodb-tools.svg?branch=master
+[travis-url]: https://travis-ci.org/unshift/dynamodb-tools
+[daviddm-image]: https://david-dm.org/unshift/dynamodb-tools.svg?theme=shields.io
+[daviddm-url]: https://david-dm.org/unshift/dynamodb-tools
+[coveralls-image]: https://coveralls.io/repos/unshift/dynamodb-tools/badge.svg
+[coveralls-url]: https://coveralls.io/r/unshift/dynamodb-tools

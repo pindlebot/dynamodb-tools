@@ -10,6 +10,14 @@
     "fix": "standard --fix",
     "build": "babel src -d lib"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unshift/dynamodb-tools.git"
+  },
+  "author": {
+    "name": "Ben Gardner",
+    "url": "https://menubar.io"
+  },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.39",
     "@babel/core": "^7.0.0-beta.51",

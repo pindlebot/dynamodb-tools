@@ -12,24 +12,27 @@ const dynamo = require('dynamodb-tools').db()
 
 ## Methods
 
-### `get()`
+`table(tableName: string)`
+
+Chainable method to set the table name.
+
+`get()`
 
 Returns all records in a table (scan operation).
 
-### `get(id: string)`
+`get(id: string)`
 
 Returns a record in a table (get operation).
 
-### `get({ id: 'value' }: object)`
+`get({ id: 'value' }: object)`
 
 Returns records that match the data provided.
  - `get({ id: 'recordId' })` performs a get operation and returns a single record. Equivalent to `get('recordId')`.
- - `get({ age: 15 })` performs a scan operation or query operation (if global secondary indices are configured)
+ - `get({ age: 15 })` performs a scan or query operation. Prefers the query operation if global secondary indices are configured.
 
-#### Examples
+### Examples
 
 ```js
-
 const db = require('dynamodb-tools')
   .db({ region: 'us-east-1' })
   .table('orders')
@@ -78,23 +81,23 @@ db.get({ user: 'e67f846dc4b067d9fa6c9a8eda72f7de' }).then(resp => {
 
 ```
 
-### `set(id: string)`
+`set(id: string)`
 
 Create a new record with the provided id.
 
-### `set({ id: '4d5ea3eddd26b469' })
+`set({ id: '4d5ea3eddd26b469' })`
 
 Equivalent to the above.
 
-### `set('4d5ea3eddd26b469', data)
+`set('4d5ea3eddd26b469', data)`
 
-Create or update a record with an id and provided properties.
+Create or update a record with the provided id and properties.
 
-### `set({ id: '4d5ea3eddd26b469', ...data })
+`set({ id: '4d5ea3eddd26b469', ...data })`
 
 Equivalent to the above.
 
-#### Examples
+### Examples
 
 ```js
 const db = require('dynamodb-tools')
@@ -115,14 +118,17 @@ db.set('4d5ea3eddd26b469', { user: '408926c6a868bca6529fee1acf7f81cb' })
 // => { id: '4d5ea3eddd26b469', user: '408926c6a868bca6529fee1acf7f81cb' }
 ```
 
-### `remove(id)`
+`remove(id)`
 
-`remove` deletes record(s) from a DynamoDb table.
+Deletes the record with the provided id.
 
-#### Examples
+`remove({ id: 'value' })` 
+
+Equivalent to the above.
+
+### Examples
 
 ```js
-
 const db = require('dynamodb-tools')
   .db({ region: 'us-east-1' })
   .table('orders')
@@ -132,7 +138,6 @@ db.remove('4d5ea3eddd26b469')
 
 db.remove({ id: '4d5ea3eddd26b469' })
   .then(resp => console.log(resp))
-
 ```
 
 

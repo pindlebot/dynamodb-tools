@@ -19,11 +19,6 @@ module.exports = function DynamoDbClient (
       .then(({ Item }) => Item)
   }
 
-  function createItem (params) {
-    return documentClient.put(params).promise()
-      .then(() => params.Item)
-  }
-
   function updateItem (params) {
     return documentClient.update(params).promise()
       .then(({ Attributes }) => Attributes)
@@ -40,9 +35,9 @@ module.exports = function DynamoDbClient (
 
   function describeTable (params) {
     return new Promise((resolve, reject) => {
-      dynamoDb.describeTable(params, (err, { Table }) => {
+      dynamoDb.describeTable(params, (err, data) => {
         if (err) reject(err)
-        resolve(Table)
+        resolve(data.Table)
       })
     })
   }
@@ -50,7 +45,6 @@ module.exports = function DynamoDbClient (
   return {
     scan,
     get,
-    createItem,
     updateItem,
     deleteItem,
     query,

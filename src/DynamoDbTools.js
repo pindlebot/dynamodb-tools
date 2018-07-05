@@ -2,11 +2,8 @@ const Params = require('./Params')
 const DynamoDbClient = require('./DynamoDbClient')
 
 class DynamoDbTools extends Params {
-  constructor (
-    awsConfig = { region: 'us-east-1' }
-  ) {
+  constructor (awsConfig = { region: 'us-east-1' }) {
     super()
-
     this.AwsConfig = awsConfig
     this.client = DynamoDbClient(this.AwsConfig)
   }
@@ -92,12 +89,15 @@ class DynamoDbTools extends Params {
   }
 
   value (operation) {
-    let TableName = this.params.TableName.slice(0)
-    return this.client[operation](this.params)
+    let params = { ...this.params }
+    Object.assign(this, database.apply(DynamoDbTools, this.AwsConfig))
+    this.params.TableName = params.TableName
+    return this.client[operation](params)
       .then(data => {
-        Object.assign(this, database.apply(DynamoDbTools, this.AwsConfig))
-        this.params.TableName = TableName
-        return data.length && data.length === 1
+        if (typeof data === 'undefined') {
+          return Promise.reject(new Error('unknown record'))
+        }
+        return data && data.length && data.length === 1
           ? data[0]
           : data
       })

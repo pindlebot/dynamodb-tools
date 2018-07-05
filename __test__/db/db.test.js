@@ -68,3 +68,11 @@ it('remove(id) should delete a record', () => {
   let db = require('../../lib')().table('stackerror-dev-state')
   return expect(db.remove('somekey')).resolves.toMatchObject({})
 })
+
+it('get(nonExistentId) should reject a promise', async () => {
+  expect.assertions(1)
+  let db = require('../../lib')().table('stackerror-dev-state')
+  await expect(db.get('1234')).rejects.toMatchObject({
+    message: 'unknown record'
+  })
+})

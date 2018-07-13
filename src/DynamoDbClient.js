@@ -11,17 +11,17 @@ module.exports = function DynamoDbClient (
 
   function scan (params) {
     return documentClient.scan(params).promise()
-      .then(({ Items }) => Items)
+      // .then(({ Items }) => Items)
   }
 
   function get (params) {
     return documentClient.get(params).promise()
-      .then(({ Item }) => Item)
+     // .then(({ Item }) => Item)
   }
 
   function updateItem (params) {
     return documentClient.update(params).promise()
-      .then(({ Attributes }) => Attributes)
+      // .then(({ Attributes }) => Attributes)
   }
 
   function deleteItem (params) {
@@ -30,7 +30,7 @@ module.exports = function DynamoDbClient (
 
   function query (params) {
     documentClient.query(params).promise()
-      .then(({ Items }) => Items)
+      // .then(({ Items }) => Items)
   }
 
   function describeTable (params) {

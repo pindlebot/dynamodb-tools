@@ -37,8 +37,8 @@ const db = require('dynamodb-tools')
   .db({ region: 'us-east-1' })
   .table('orders')
 
-db.get().then(resp => {
-  console.log(resp)
+db.get().then(({ Items }) => {
+  console.log(Items)
 })
 
 // => [{
@@ -52,7 +52,7 @@ db.get().then(resp => {
 // }]
 
 db.get('1c8deb5013d6e49a').then(resp => {
-  console.log(resp)
+  console.log(resp.Item)
 })
 
 // => {
@@ -61,7 +61,7 @@ db.get('1c8deb5013d6e49a').then(resp => {
 // }
 
 db.get({ id: '1c8deb5013d6e49a' }).then(resp => {
-  console.log(resp)
+  console.log(resp.Item)
 })
 
 // => {
@@ -71,7 +71,7 @@ db.get({ id: '1c8deb5013d6e49a' }).then(resp => {
 
 // match all records in the provided table with user = 'e67f846dc4b067d9fa6c9a8eda72f7de'
 db.get({ user: 'e67f846dc4b067d9fa6c9a8eda72f7de' }).then(resp => {
-  console.log(resp)
+  console.log(resp.Item)
 })
 
 // => {
@@ -105,14 +105,14 @@ const db = require('dynamodb-tools')
   .table('orders')
 
 db.set({ id: '4d5ea3eddd26b469' }).then(resp => {
-  console.log(resp)
+  console.log(resp.Attributes)
 })
 
 // => { id: '4d5ea3eddd26b469' }
 
 db.set('4d5ea3eddd26b469', { user: '408926c6a868bca6529fee1acf7f81cb' }) 
  .then(resp => {
-    console.log(resp)
+    console.log(resp.Attributes)
   })
 
 // => { id: '4d5ea3eddd26b469', user: '408926c6a868bca6529fee1acf7f81cb' }

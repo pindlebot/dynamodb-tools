@@ -14,27 +14,27 @@ const data = {
 
 const db = require('../../lib')().table(table)
 
-// describe('get()', function () {
-//  it('should return all records in a table', function (done) {
-//    let promise = db.get()
-//    promise.should.eventually.have.property('length').notify(done)
-//    log(promise)
-//  })
-// })
+it('get() should return all records in a table', async () => {
+  let result = await require('../../lib')().table('npm-available-dev-names')
+    .params({ Limit: 10 }).get()
+  console.log(JSON.stringify(result))
+  expect(result.Items.length).toBe(10)
+})
 
 it('get(id) should return a single record', () => {
   expect.assertions(1)
-  return expect(db.get(record.id)).resolves.toMatchObject(data)
+  return expect(db.get(record.id).then(d => d.Item)).resolves.toMatchObject(data)
 })
 
 it('get({ id }) should return a single record', () => {
   expect.assertions(1)
-  return expect(db.get({ id: record.id })).resolves.toMatchObject(data)
+  return expect(db.get({ id: record.id }).then(d => d.Item)).resolves.toMatchObject(data)
 })
 
 it('get(data) should return a single record matching the provided data', () => {
   expect.assertions(1)
-  return expect(db.get({ primaryCard: 'cards|3fbb88593233adfd' })).resolves.toMatchObject({
+  let promise = db.get({ primaryCard: 'cards|3fbb88593233adfd' }).then(d => d.Items[0])
+  return expect(promise).resolves.toMatchObject({
     createdAt: '2017-11-04T16:57:23+00:00',
     primaryCard: 'cards|3fbb88593233adfd',
     id: 'sess|82b65b644ae3fe24ff64a7fc72d4a0cd',
@@ -46,7 +46,9 @@ it('get(data) should return a single record matching the provided data', () => {
 it('set(id, data) should create a new record', () => {
   let db = require('../../lib')().table('stackerror-dev-state')
   expect.assertions(1)
-  return expect(db.set('somekey', { property: 'value' })).resolves.toMatchObject({
+  let promise = db.set('somekey', { property: 'value' })
+    .then(d => d.Attributes)
+  return expect(promise).resolves.toMatchObject({
     id: 'somekey',
     property: 'value'
   })
@@ -56,8 +58,9 @@ it('set(data) should create a new record', () => {
   expect.assertions(1)
   let db = require('../../lib')().table('stackerror-dev-state')
   let id = crypto.randomBytes(8).toString('hex')
-
-  return expect(db.set({ id, property: 'value' })).resolves.toMatchObject({
+  let promise = db.set({ id, property: 'value' })
+    .then(d => d.Attributes)
+  return expect(promise).resolves.toMatchObject({
     id: id,
     property: 'value'
   })
@@ -72,7 +75,9 @@ it('remove(id) should delete a record', () => {
 it('get(nonExistentId) should reject a promise', async () => {
   expect.assertions(1)
   let db = require('../../lib')().table('stackerror-dev-state')
-  await expect(db.get('1234')).rejects.toMatchObject({
+  let promise = db.get('123567')
+  promise.then(console.log)
+  await expect(promise).rejects.toMatchObject({
     message: 'unknown record'
   })
 })

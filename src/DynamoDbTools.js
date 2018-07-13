@@ -10,7 +10,7 @@ class DynamoDbTools extends Params {
 
   setAttribute (type, data) {
     const char = type.endsWith('Names') ? '#' : ':'
-    this.params[type] = Object.keys(data).reduce((acc, key) => {
+    this._params[type] = Object.keys(data).reduce((acc, key) => {
       acc[char + key] = char === ':' ? data[key] : key
       return acc
     }, {})
@@ -26,14 +26,14 @@ class DynamoDbTools extends Params {
       .map(k => `#${k} = :${k}`)
       .join(opts.separator)
 
-    this.params[key] = opts.clause
+    this._params[key] = opts.clause
       ? [opts.clause, expression].join(' ') : expression
   }
 
   getGlobalSecondaryIndex (data = {}) {
     const keys = Object.keys(data)
     if (!keys.length) return undefined
-    const { GlobalSecondaryIndexes } = this.cache[this.params.TableName]
+    const { GlobalSecondaryIndexes } = this.cache[this._params.TableName]
     if (!GlobalSecondaryIndexes) return undefined
 
     return GlobalSecondaryIndexes.find(({ KeySchema }) =>
@@ -49,7 +49,7 @@ class DynamoDbTools extends Params {
     if (Object.keys(data).length) {
       this.setAttribute('ExpressionAttributeNames', data)
       this.setAttribute('ExpressionAttributeValues', data)
-      this.params.ReturnValues = 'ALL_NEW'
+      this._params.ReturnValues = 'ALL_NEW'
       this.setExpression(
         'UpdateExpression',
         data,
@@ -66,7 +66,7 @@ class DynamoDbTools extends Params {
 
     let operation = typeof globalSecondaryIndex !== 'undefined'
       ? 'query'
-      : this.params.Key
+      : this._params.Key
         ? 'get'
         : 'scan'
 
@@ -89,17 +89,18 @@ class DynamoDbTools extends Params {
   }
 
   value (operation) {
-    let params = { ...this.params }
+    let params = { ...this._params }
     Object.assign(this, database.apply(DynamoDbTools, this.AwsConfig))
-    this.params.TableName = params.TableName
+    this._params.TableName = params.TableName
     return this.client[operation](params)
       .then(data => {
-        if (typeof data === 'undefined') {
+        if (
+          operation === 'get' &&
+          (typeof data === 'undefined' || !Object.keys(data).length)
+        ) {
           return Promise.reject(new Error('unknown record'))
         }
-        return data && data.length && data.length === 1
-          ? data[0]
-          : data
+        return data
       })
   }
 }

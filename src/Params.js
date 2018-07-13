@@ -1,13 +1,21 @@
 class Params {
   constructor () {
-    this.params = {}
+    this._params = {}
     this.cache = {}
     this.data = {}
   }
 
+  params (_params = {}) {
+    this._params = {
+      ...this._params,
+      ..._params
+    }
+    return this
+  }
+
   table (name) {
     if (name) {
-      this.params.TableName = name
+      this._params.TableName = name
     }
     return this
   }
@@ -15,7 +23,7 @@ class Params {
   ref (pair = {}) {
     let [name] = Object.keys(pair)
     if (name && typeof pair[name] !== 'undefined') {
-      this.params.Key = pair
+      this._params.Key = pair
       if (this.data[name]) {
         delete this.data[name]
       }
@@ -28,7 +36,7 @@ class Params {
   }
 
   getAttributeName () {
-    let { KeySchema } = this.cache[this.params.TableName]
+    let { KeySchema } = this.cache[this._params.TableName]
     let { AttributeName } = KeySchema.find(({ KeyType }) => KeyType === 'HASH')
     return AttributeName
   }
@@ -36,7 +44,7 @@ class Params {
   async format (...args) {
     this.data = args.find(arg => typeof arg === 'object') || {}
 
-    let { TableName } = this.params
+    let { TableName } = this._params
     if (!TableName) {
       throw new Error(`TableName must be provided with chainable method table(tableName)`)
     }

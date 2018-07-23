@@ -49,6 +49,10 @@ class Params {
       throw new Error(`TableName must be provided with chainable method table(tableName)`)
     }
 
+    if (this._params.Key) {
+      return this
+    }
+  
     if (!this.cache[TableName]) {
       this.cache[TableName] = await this.client.describeTable({ TableName })
     }

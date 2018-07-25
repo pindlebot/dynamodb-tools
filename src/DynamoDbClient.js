@@ -29,7 +29,7 @@ module.exports = function DynamoDbClient (
   }
 
   function query (params) {
-    documentClient.query(params).promise()
+    return documentClient.query(params).promise()
       // .then(({ Items }) => Items)
   }
 

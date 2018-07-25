@@ -61,9 +61,8 @@ class DynamoDbTools extends Params {
   }
 
   async get (...args) {
-    const { data } = await this.format(...args)
-    const globalSecondaryIndex = this.getGlobalSecondaryIndex(data)
-
+    await this.format(...args)
+    const globalSecondaryIndex = this.getGlobalSecondaryIndex(this.data)
     let operation = typeof globalSecondaryIndex !== 'undefined'
       ? 'query'
       : this._params.Key
@@ -71,12 +70,17 @@ class DynamoDbTools extends Params {
         : 'scan'
 
     if (
-      operation === 'scan' &&
-      Object.keys(data).length
+      operation !== 'get' &&
+      Object.keys(this.data).length
     ) {
-      this.setAttribute('ExpressionAttributeNames', data)
-      this.setAttribute('ExpressionAttributeValues', data)
-      this.setExpression('FilterExpression', data)
+      this.setAttribute('ExpressionAttributeNames', this.data)
+      this.setAttribute('ExpressionAttributeValues', this.data)
+      if (operation === 'query') {
+        this._params.IndexName = globalSecondaryIndex.IndexName
+        this.setExpression('KeyConditionExpression', this.data)
+      } else {
+        this.setExpression('FilterExpression', this.data)
+      }
     }
 
     return this.value(operation)

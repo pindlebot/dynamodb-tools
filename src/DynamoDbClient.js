@@ -10,18 +10,15 @@ module.exports = function DynamoDbClient (
   const dynamoDb = new DynamoDB(config)
 
   function scan (params) {
-    return documentClient.scan(params).promise()
-      // .then(({ Items }) => Items)
+    return documentClient.scan(params).promise() // Items
   }
 
   function get (params) {
-    return documentClient.get(params).promise()
-     // .then(({ Item }) => Item)
+    return documentClient.get(params).promise() // Item
   }
 
   function updateItem (params) {
-    return documentClient.update(params).promise()
-      // .then(({ Attributes }) => Attributes)
+    return documentClient.update(params).promise() // Attributes
   }
 
   function deleteItem (params) {
@@ -29,8 +26,7 @@ module.exports = function DynamoDbClient (
   }
 
   function query (params) {
-    return documentClient.query(params).promise()
-      // .then(({ Items }) => Items)
+    return documentClient.query(params).promise() // Items
   }
 
   function describeTable (params) {

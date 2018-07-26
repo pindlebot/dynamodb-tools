@@ -40,9 +40,7 @@
       "jest"
     ]
   },
-  "dependencies": {
-    "fs-extra": "^7.0.0"
-  },
+  "dependencies": {},
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   }

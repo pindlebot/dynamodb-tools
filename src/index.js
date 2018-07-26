@@ -1,6 +1,4 @@
 const client = require('./client')({ region: process.env.AWS_REGION })
-const path = require('path')
-const fs = require('fs-extra')
 
 const expression = (data, opts = { separator: ' AND ' }) => {
   const expression = Object.keys(data)
@@ -20,30 +18,22 @@ const attribute = (type, data) => {
   }, {})
 }
 
+const cache = {}
+
 function db (table) {
   let data = {}
   let params = {
     TableName: table
   }
-  let cache
-  let cachePromise
-
-  cachePromise = new Promise(async (resolve, reject) => {
-    let tableData
-    let dir = path.join(__dirname, '../cache/')
-    let cachePath = path.join(dir, `${table}.json`)
-    try {
-      tableData = require(cachePath)
-    } catch (err) {
-      tableData = await client.describeTable({ TableName: table })
-      await fs.ensureDir(dir)
-      await fs.writeJson(cachePath, tableData)
+  let cachePromise = new Promise(async (resolve, reject) => {
+    if (!cache[table]) {
+      cache[table] = await client.describeTable({ TableName: table })
     }
-    resolve(tableData)
+    resolve(cache[table])
   })
 
   const getAttributeName = () => {
-    let { KeySchema } = cache
+    let { KeySchema } = cache[table]
     let { AttributeName } = KeySchema.find(({ KeyType }) => KeyType === 'HASH')
     return AttributeName
   }
@@ -59,7 +49,7 @@ function db (table) {
   }
 
   const createParams = async (...args) => {
-    cache = await cachePromise
+    await cachePromise
     data = args.find(arg => typeof arg === 'object') || {}
     let name = getAttributeName()
 
@@ -75,7 +65,7 @@ function db (table) {
   const getGlobalSecondaryIndex = (data = {}) => {
     const keys = Object.keys(data)
     if (!keys.length) return undefined
-    const { GlobalSecondaryIndexes } = cache
+    const { GlobalSecondaryIndexes } = cache[table]
     if (!GlobalSecondaryIndexes) return undefined
 
     return GlobalSecondaryIndexes.find(({ KeySchema }) =>
@@ -87,7 +77,6 @@ function db (table) {
 
   const get = async (...args) => {
     let data = await createParams(...args)
-    console.log(data)
     const globalSecondaryIndex = getGlobalSecondaryIndex(data)
     let operation = typeof globalSecondaryIndex !== 'undefined'
       ? 'query'

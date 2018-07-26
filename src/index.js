@@ -18,6 +18,17 @@ const attribute = (type, data) => {
   }, {})
 }
 
+const value = (operation, params) => client[operation](params)
+  .then(data => {
+    if (
+      operation === 'get' &&
+      (typeof data === 'undefined' || !Object.keys(data).length)
+    ) {
+      return Promise.reject(new Error('unknown record'))
+    }
+    return data
+  })
+
 const cache = {}
 
 function db (table) {
@@ -25,9 +36,12 @@ function db (table) {
   let params = {
     TableName: table
   }
-  let cachePromise = new Promise(async (resolve, reject) => {
+
+  const cachePromise = new Promise(async (resolve, reject) => {
     if (!cache[table]) {
-      cache[table] = await client.describeTable({ TableName: table })
+      cache[table] = await client.table({
+        TableName: table
+      })
     }
     resolve(cache[table])
   })
@@ -88,11 +102,9 @@ function db (table) {
       operation !== 'get' &&
       Object.keys(data).length
     ) {
-      params = {
-        ...params,
-        ExpressionAttributeNames: attribute('names', data),
-        ExpressionAttributeValues: attribute('values', data)
-      }
+      params.ExpressionAttributeNames = attribute('names', data)
+      params.ExpressionAttributeValues = attribute('values', data)
+
       if (operation === 'query') {
         params.IndexName = globalSecondaryIndex.IndexName
         params.KeyConditionExpression = expression(data)
@@ -101,7 +113,7 @@ function db (table) {
       }
     }
 
-    return client[operation](params)
+    return value(operation, params)
   }
 
   const set = async (...args) => {
@@ -112,12 +124,12 @@ function db (table) {
       params.ReturnValues = 'ALL_NEW'
       params.UpdateExpression = expression(data, { separator: ', ', clause: 'SET' })
     }
-    return client.updateItem(params)
+    return value('update', params)
   }
 
   const remove = async (...args) => {
     await createParams(...args)
-    return client.deleteItem(params)
+    return value('remove', params)
   }
 
   return {

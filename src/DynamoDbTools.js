@@ -94,11 +94,11 @@ class DynamoDbTools extends Params {
 
   value (operation) {
     let params = { ...this._params }
-    // Object.assign(this, database.apply(DynamoDbTools, this.AwsConfig))
-    this._params = {
-      TableName: params.TableName
-    }
-    this.data = {}
+    Object.assign(this, database.apply(DynamoDbTools, this.AwsConfig))
+    // this._params = {
+    //  TableName: params.TableName
+    // }
+    // this.data = {}
     return this.client[operation](params)
       .then(data => {
         if (

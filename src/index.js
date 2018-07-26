@@ -22,26 +22,25 @@ const attribute = (type, data) => {
 
 function db (table) {
   let data = {}
-  let params = {}
+  let params = {
+    TableName: table
+  }
   let cache
   let cachePromise
-  
-  const table = (tableName) => {
-    params.TableName = tableName
-    cachePromise = new Promise(async (resolve, reject) => {
-      let tableData
-      let dir = path.join(__dirname, '../cache/')
-      let cachePath = path.join(dir, `${table}.json`)
-      try {
-        tableData = require(cachePath)
-      } catch (err) {
-        tableData = await client.describeTable({ TableName: table })
-        await fs.ensureDir(dir)
-        await fs.writeJson(cachePath, tableData)
-      }
-      resolve(tableData)
-    })
-  }
+
+  cachePromise = new Promise(async (resolve, reject) => {
+    let tableData
+    let dir = path.join(__dirname, '../cache/')
+    let cachePath = path.join(dir, `${table}.json`)
+    try {
+      tableData = require(cachePath)
+    } catch (err) {
+      tableData = await client.describeTable({ TableName: table })
+      await fs.ensureDir(dir)
+      await fs.writeJson(cachePath, tableData)
+    }
+    resolve(tableData)
+  })
 
   const getAttributeName = () => {
     let { KeySchema } = cache
@@ -132,7 +131,7 @@ function db (table) {
     return client.deleteItem(params)
   }
 
-  const context = {
+  return {
     get,
     set,
     remove,
@@ -142,12 +141,8 @@ function db (table) {
         ...params,
         ..._params
       }
-    },
-    table: () => {
-
     }
   }
-  return context
 }
 
 module.exports = db

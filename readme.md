@@ -6,7 +6,8 @@ npm i dynamodb-tools --save
 
 ```js
 
-const dynamo = require('dynamodb-tools')
+const tools = require('dynamodb-tools')
+const db = tools(DYNAMODB_TABLE_NAME)
 
 ```
 
@@ -16,14 +17,12 @@ const dynamo = require('dynamodb-tools')
 
 Returns all records in a table (scan operation).
 
-`get(id: string)`
+`get({ id: 'value' }: object)`
 
 Returns a record in a table (get operation).
 
-`get({ id: 'value' }: object)`
-
 Returns records that match the data provided.
- - `get({ id: 'recordId' })` performs a get operation and returns a single record. Equivalent to `get('recordId')`.
+ - `get({ id: 'recordId' })` performs a get operation and returns a single record.
  - `get({ age: 15 })` performs a scan or query operation. Prefers the query operation if global secondary indices are configured.
 
 ### Examples
@@ -31,9 +30,7 @@ Returns records that match the data provided.
 ```js
 const db = require('dynamodb-tools')
 
-db('users').get().then(({ Items }) => {
-  console.log(Items)
-})
+db('users').get().then(console.log.bind(console))
 
 // => [{
 //  user: 'e67f846dc4b067d9fa6c9a8eda72f7de',
@@ -45,18 +42,7 @@ db('users').get().then(({ Items }) => {
 //  ...
 // }]
 
-db('users').get('1c8deb5013d6e49a').then(resp => {
-  console.log(resp.Item)
-})
-
-// => {
-//  user: 'e67f846dc4b067d9fa6c9a8eda72f7de',
-//  id: '1c8deb5013d6e49a',
-// }
-
-db('users').get({ id: '1c8deb5013d6e49a' }).then(resp => {
-  console.log(resp.Item)
-})
+db('users').get({ id: '1c8deb5013d6e49a' }).then(console.log.bind(console))
 
 // => {
 //  user: 'e67f846dc4b067d9fa6c9a8eda72f7de',
@@ -64,9 +50,8 @@ db('users').get({ id: '1c8deb5013d6e49a' }).then(resp => {
 // }
 
 // match all records in the provided table with user = 'e67f846dc4b067d9fa6c9a8eda72f7de'
-db('users').get({ user: 'e67f846dc4b067d9fa6c9a8eda72f7de' }).then(resp => {
-  console.log(resp.Item)
-})
+db('users').get({ user: 'e67f846dc4b067d9fa6c9a8eda72f7de' })
+  .then(console.log.bind(console))
 
 // => {
 //  user: 'e67f846dc4b067d9fa6c9a8eda72f7de',
@@ -74,62 +59,42 @@ db('users').get({ user: 'e67f846dc4b067d9fa6c9a8eda72f7de' }).then(resp => {
 // }
 
 ```
-
-`set(id: string)`
-
-Create a new record with the provided id.
-
 `set({ id: '4d5ea3eddd26b469' })`
 
-Equivalent to the above.
-
-`set('4d5ea3eddd26b469', data)`
-
-Create or update a record with the provided id and properties.
-
-`set({ id: '4d5ea3eddd26b469', ...data })`
-
-Equivalent to the above.
+Create a new record with the provided id.
 
 ### Examples
 
 ```js
 const db = require('dynamodb-tools')
 
-db('orders').set({ id: '4d5ea3eddd26b469' }).then(resp => {
-  console.log(resp.Attributes)
-})
+db('orders').set({ id: '4d5ea3eddd26b469' })
+  .then(console.log.bind(console))
 
 // => { id: '4d5ea3eddd26b469' }
 
-db('orders').set('4d5ea3eddd26b469', { user: '408926c6a868bca6529fee1acf7f81cb' }) 
- .then(resp => {
-    console.log(resp.Attributes)
-  })
+db('orders').set({
+  id: '4d5ea3eddd26b469'
+  user: '408926c6a868bca6529fee1acf7f81cb'
+})
+ .then(console.log.bind(console))
 
 // => { id: '4d5ea3eddd26b469', user: '408926c6a868bca6529fee1acf7f81cb' }
 ```
 
-`remove(id)`
-
-Deletes the record with the provided id.
-
 `remove({ id: 'value' })` 
 
-Equivalent to the above.
+Deletes the record with the provided id.
 
 ### Examples
 
 ```js
 const db = require('dynamodb-tools')
 
-db('orders').remove('4d5ea3eddd26b469')
-  .then(resp => console.log(resp))
-
 db('orders').remove({ id: '4d5ea3eddd26b469' })
   .then(resp => console.log(resp))
-```
 
+```
 
 [npm-image]: https://badge.fury.io/js/dynamodb-tools.svg
 [npm-url]: https://npmjs.org/package/dynamodb-tools

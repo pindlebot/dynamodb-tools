@@ -1,14 +1,13 @@
 {
   "name": "dynamodb-tools",
   "version": "0.0.64",
-  "main": "index.js",
+  "main": "src/index.js",
   "license": "MIT",
   "scripts": {
     "test": "jest",
     "clean": "rimraf lib",
     "report": "jest --coverage --coverageReporters=text-lcov | coveralls",
-    "fix": "standard --fix",
-    "build": "babel src -d lib"
+    "fix": "standard --fix"
   },
   "repository": {
     "type": "git",
@@ -19,19 +18,11 @@
     "url": "https://menubar.io"
   },
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.39",
-    "@babel/core": "^7.0.0-beta.51",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.39",
-    "@babel/plugin-transform-async-to-generator": "^7.0.0-beta.39",
-    "@babel/plugin-transform-exponentiation-operator": "^7.0.0-beta.39",
-    "@babel/preset-env": "^7.0.0-beta.39",
     "aws-sdk": "^2.188.0",
-    "babel-core": "^7.0.0-0",
     "babel-jest": "^23.2.0",
     "coveralls": "^3.0.2",
     "jest": "^23.3.0",
     "npm-patch": "^0.0.43",
-    "regenerator-runtime": "^0.12.0",
     "rimraf": "^2.6.2",
     "standard": "^10.0.3"
   },

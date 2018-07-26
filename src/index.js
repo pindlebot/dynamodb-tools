@@ -24,6 +24,25 @@ const value = (operation, params) => {
     console.log(params)
   }
   return client[operation](params)
+    .then(data => {
+      if (!data) {
+        return undefined
+      }
+      if (data.Item) {
+        return data.Item
+      }
+      if (data.Attributes) {
+        return data.Attributes
+      }
+      if (data.hasOwnProperty('Items')) {
+        return data.Items.length > 1
+          ? data.Items
+          : data.Items.length === 1
+            ? data.Items[0]
+            : []
+      }
+      return data
+    })
 }
   // .then(data => {
   //  if (

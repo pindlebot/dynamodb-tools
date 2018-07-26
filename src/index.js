@@ -18,16 +18,22 @@ const attribute = (type, data) => {
   }, {})
 }
 
-const value = (operation, params) => client[operation](params)
-  .then(data => {
-    if (
-      operation === 'get' &&
-      (typeof data === 'undefined' || !Object.keys(data).length)
-    ) {
-      return Promise.reject(new Error('unknown record'))
-    }
-    return data
-  })
+const value = (operation, params) => {
+  if (process.env.DEBUG) {
+    console.log(operation)
+    console.log(params)
+  }
+  return client[operation](params)
+}
+  // .then(data => {
+  //  if (
+  //    operation === 'get' &&
+  //    (typeof data === 'undefined' || !Object.keys(data).length)
+  //  ) {
+  //    return Promise.reject(new Error('unknown record'))
+  //  }
+  //  return data
+  // })
 
 const cache = {}
 
@@ -84,7 +90,8 @@ function db (table) {
 
     return GlobalSecondaryIndexes.find(({ KeySchema }) =>
       KeySchema.find(({ AttributeName }) =>
-        keys.includes(AttributeName)
+        keys.includes(AttributeName) &&
+          typeof data[AttributeName] !== 'undefined'
       )
     )
   }
@@ -98,9 +105,17 @@ function db (table) {
         ? 'get'
         : 'scan'
 
+    let keys = Object.keys(data)
+    let [name] = keys
+    if (
+      keys.length === 1 &&
+      typeof data[name] === 'undefined'
+    ) {
+      return
+    }
     if (
       operation !== 'get' &&
-      Object.keys(data).length
+      keys.length
     ) {
       params.ExpressionAttributeNames = attribute('names', data)
       params.ExpressionAttributeValues = attribute('values', data)

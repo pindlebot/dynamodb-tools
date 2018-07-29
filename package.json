@@ -1,6 +1,6 @@
 {
   "name": "dynamodb-tools",
-  "version": "0.0.67",
+  "version": "0.0.68",
   "main": "src/index.js",
   "license": "MIT",
   "scripts": {

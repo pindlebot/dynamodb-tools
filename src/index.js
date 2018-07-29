@@ -135,7 +135,8 @@ function db (table) {
 
   const remove = async (...args) => {
     await createParams(...args)
-    return value('remove', params)
+    return value('remove', params)  
+      .then(() => args.find(arg => typeof arg === 'object'))
   }
 
   return {

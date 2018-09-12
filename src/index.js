@@ -13,7 +13,18 @@ const expression = (data, opts = { separator: ' AND ' }) => {
 const attribute = (type, data) => {
   const char = type.endsWith('names') ? '#' : ':'
   return Object.keys(data).reduce((acc, key) => {
-    acc[char + key] = char === ':' ? data[key] : key
+    let prop = `${char}${key}`
+    if (char === ':') {
+      if (Array.isArray(data[key])) {
+        data[key].forEach((val, i) => {
+          acc[`${prop}${i}`] = data[key][i]
+        })
+      } else {
+        acc[prop] = data[key]
+      }
+    } else {
+      acc[prop] = key
+    }
     return acc
   }, {})
 }
@@ -33,6 +44,7 @@ function db (table) {
   let params = {
     TableName: table
   }
+  let context = {}
 
   const cachePromise = new Promise(async (resolve, reject) => {
     if (!cache[table]) {
@@ -78,7 +90,6 @@ function db (table) {
     if (!keys.length) return undefined
     const { GlobalSecondaryIndexes } = cache[table]
     if (!GlobalSecondaryIndexes) return undefined
-
     return GlobalSecondaryIndexes.find(({ KeySchema }) =>
       KeySchema.find(({ AttributeName }) =>
         keys.includes(AttributeName) &&
@@ -90,31 +101,48 @@ function db (table) {
   const get = async (...args) => {
     let data = await createParams(...args)
     const globalSecondaryIndex = getGlobalSecondaryIndex(data)
-    let operation = typeof globalSecondaryIndex !== 'undefined'
+    let keys = Object.keys(data)
+    let [name] = keys
+
+    let operation = (typeof globalSecondaryIndex !== 'undefined' && keys.length)
       ? 'query'
       : params.Key
         ? 'get'
         : 'scan'
 
-    let keys = Object.keys(data)
-    let [name] = keys
-    if (
-      keys.length === 1 &&
-      typeof data[name] === 'undefined'
-    ) {
+    if (keys.length === 1 && typeof data[name] === 'undefined') {
       return
     }
-    if (
-      operation !== 'get' &&
-      keys.length
-    ) {
+
+    // scan or query
+    if (operation !== 'get' && keys.length) {
       params.ExpressionAttributeNames = attribute('names', data)
       params.ExpressionAttributeValues = attribute('values', data)
 
       if (operation === 'query') {
+        let { AttributeName } = globalSecondaryIndex.KeySchema.find(({ KeyType }) => KeyType === 'HASH')
         params.IndexName = globalSecondaryIndex.IndexName
-        params.KeyConditionExpression = expression(data)
+        params.KeyConditionExpression = expression({ [AttributeName]: data[AttributeName] })
+
+        const FilterExpression = Object.keys(data)
+          .filter(key => key !== AttributeName)
+          .reduce((acc, key) => {
+            if (Array.isArray(data[key])) {
+              delete params.ExpressionAttributeValues[`:${key}`]
+              data[key].forEach((val, i) => {
+                acc.push(`contains(#${key}, :${key}${i})`)
+              })
+            } else {
+              acc.push([`:${key} = #${key}`])
+            }
+            return acc
+          }, [])
+
+        if (FilterExpression.length) {
+          params.FilterExpression = FilterExpression.join(', ')
+        }
       } else {
+        // scan
         params.FilterExpression = expression(data)
       }
     }
@@ -139,18 +167,21 @@ function db (table) {
       .then(() => args.find(arg => typeof arg === 'object'))
   }
 
-  return {
+  context = {
     get,
     set,
     remove,
     key,
-    params: (_params) => {
+    params: _params => {
       params = {
         ...params,
         ..._params
       }
+      return context
     }
   }
+
+  return context
 }
 
 module.exports = db

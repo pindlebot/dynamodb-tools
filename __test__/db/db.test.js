@@ -12,10 +12,10 @@ const data = {
   updatedAt: '2017-11-05T09:39:12+00:00'
 }
 
-const db = require('../../lib')().table(table)
+const db = require('../../src')(table)
 
 it('get() should return all records in a table', async () => {
-  let result = await require('../../lib')().table('npm-available-dev-names')
+  let result = await require('../../src')('npm-available-dev-names')
     .params({ Limit: 10 }).get()
   console.log(JSON.stringify(result))
   expect(result.Items.length).toBe(10)

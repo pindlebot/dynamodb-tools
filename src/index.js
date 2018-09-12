@@ -13,18 +13,7 @@ const expression = (data, opts = { separator: ' AND ' }) => {
 const attribute = (type, data) => {
   const char = type.endsWith('names') ? '#' : ':'
   return Object.keys(data).reduce((acc, key) => {
-    let prop = `${char}${key}`
-    if (char === ':') {
-      if (Array.isArray(data[key])) {
-        data[key].forEach((val, i) => {
-          acc[`${prop}${i}`] = data[key][i]
-        })
-      } else {
-        acc[prop] = data[key]
-      }
-    } else {
-      acc[prop] = key
-    }
+    acc[char + key] = char === ':' ? data[key] : key
     return acc
   }, {})
 }
@@ -115,16 +104,25 @@ function db (table) {
     }
 
     // scan or query
-    if (operation !== 'get' && keys.length) {
-      params.ExpressionAttributeNames = attribute('names', data)
-      params.ExpressionAttributeValues = attribute('values', data)
-
+    if (keys.length) {
       if (operation === 'query') {
+        params.ExpressionAttributeNames = attribute('names', data)
+        params.ExpressionAttributeValues = Object.keys(data).reduce((acc, key) => {
+          let prop = `:${key}`
+          if (Array.isArray(data[key])) {
+            data[key].forEach((val, i) => {
+              acc[`${prop}${i}`] = data[key][i]
+            })
+          } else {
+            acc[prop] = data[key]
+          }
+          return acc
+        }, {})
         let { AttributeName } = globalSecondaryIndex.KeySchema.find(({ KeyType }) => KeyType === 'HASH')
         params.IndexName = globalSecondaryIndex.IndexName
         params.KeyConditionExpression = expression({ [AttributeName]: data[AttributeName] })
 
-        const FilterExpression = Object.keys(data)
+        const FilterExpression = keys
           .filter(key => key !== AttributeName)
           .reduce((acc, key) => {
             if (Array.isArray(data[key])) {
@@ -141,8 +139,10 @@ function db (table) {
         if (FilterExpression.length) {
           params.FilterExpression = FilterExpression.join(', ')
         }
-      } else {
+      } else if (operation === 'scan') {
         // scan
+        params.ExpressionAttributeNames = attribute('names', data)
+        params.ExpressionAttributeValues = attribute('values', data)
         params.FilterExpression = expression(data)
       }
     }
